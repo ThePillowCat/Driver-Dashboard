@@ -18,6 +18,8 @@ var formManager;
 var MUSTANGFormStyle, MUSTANGControlStyle;
 var formCursor;
 
+var scoreForm;
+
 function preload() {
 	MUSTANGFormStyle = new P5FormStyle();
 	MUSTANGControlStyle = new P5ControlStyle();
@@ -321,7 +323,7 @@ function setup() {
 	
 	clearCanvas(balanceCanvas);
 
-	var scoreForm = new P5Form();
+	scoreForm = new P5Form();
 	
 	scoreForm.x = 1350;
 	scoreForm.y = 30;
@@ -540,7 +542,7 @@ function UI(object) {
 function mouseClicked() {
 	for (i = 0; i < 3; i+=1) {
 	  for (j = 0; j < 9; j+=1) {
-		if (onHitbox(scoreform.x+20+j*80+50, scoreForm.y+10+i*100+120, 60, 60)) {
+		if (onHitbox(scoreForm.x+20+j*80+50, scoreForm.y+10+i*100+120, 60, 60)) {
 		  if (grid[i][j] == 0) {
 			grid[i][j] = 1;
 			calculateScore("piece", i, j, 1)
