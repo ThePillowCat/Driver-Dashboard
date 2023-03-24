@@ -19,6 +19,12 @@ var MUSTANGFormStyle, MUSTANGControlStyle;
 var formCursor;
 
 var scoreForm;
+var armForm;
+var amountTextBox
+
+var engaged = false;
+var score;
+var docked = false;
 
 function preload() {
 	MUSTANGFormStyle = new P5FormStyle();
@@ -58,7 +64,8 @@ function setup() {
 	angleMode(DEGREES)
 
 	grid = [[0,0,0,0,0,0,0,0,0],
-         [0,0,0,0,0,0,0,0,0],                  [0,0,0,0,0,0,0,0,0]]
+           [0,0,0,0,0,0,0,0,0],                 
+		   [0,0,0,0,0,0,0,0,0]]
 	score = 0;
 	links = 0;
 	mode = "auto"
@@ -161,7 +168,7 @@ function setup() {
 	attachNotesCheckBox.h = 16;
 	attachNotesCheckBox.text = "Notes:";
 
-	var amountTextBox = new P5TextBox();
+	amountTextBox = new P5TextBox();
 	amountTextBox.anchorRight;
 	amountTextBox.maxLength = 3;
 	amountTextBox.x = 100;
@@ -329,7 +336,7 @@ function setup() {
 	scoreForm.y = 30;
 	scoreForm.w = 820;
 	scoreForm.h = 440;
-	scoreForm.container.backColor = color(230, 255, 230);
+	scoreForm.container.backColor = color(220);
 	scoreForm.title = "Scoring Tracker";
 	
 	scoreCanvas = new P5Canvas();
@@ -357,7 +364,7 @@ function setup() {
 }
 
 function draw() {
-	background(200);
+	background(220);
 
 	var c = threeDCanvas.canvas;
 
@@ -444,14 +451,16 @@ function draw() {
 
 	var f = scoreCanvas.canvas;
 
+	f.background(220)
+
 	for (i = 0; i < 3; i+=1) {
 		for (j = 0; j < 9; j+=1) {
 		  if (grid[i][j] === 1) {
-			f.fill("red")
+			f.fill("#e08000")
 		  }
 		  if (j % 3 == 1) {
 			  if (grid[i][j] === 1) {
-				  f.fill("blue")
+				  f.fill("#5b2dc6")
 			  }
 			  f.rect(j*80+50, i*100+120, 60, 60)
 		  }
@@ -510,8 +519,7 @@ function UI(object) {
 	
 	object.textSize(35)
 	//change line to this for links to be counted towards score
-	//text((score+links*5).toString(), 290, 75)
-	object.text((score).toString(), 290, 75)
+	object.text((score+links*5).toString(), 290, 75)
 	
 	object.textSize(30)
 	object.text("Docked?", 410, 35)
@@ -542,31 +550,34 @@ function UI(object) {
 function mouseClicked() {
 	for (i = 0; i < 3; i+=1) {
 	  for (j = 0; j < 9; j+=1) {
-		if (onHitbox(scoreForm.x+20+j*80+50, scoreForm.y+10+i*100+120, 60, 60)) {
+		if (onHitbox(scoreForm.x+j*80+50, scoreForm.y+i*100+120, 60, 60)) {
 		  if (grid[i][j] == 0) {
 			grid[i][j] = 1;
 			calculateScore("piece", i, j, 1)
+			computeLinks()
 		  }
 		  else {
 			grid[i][j] = 0;
 			calculateScore("piece", i, j, -1)
+			computeLinks()
 		  }
 		}
 	  }
 	}
-	if (onHitbox(10, 40, 90, 50)) {
+	if (onHitbox(scoreForm.x+20+10, scoreForm.y+10+40, 90, 50)) {
 	  mode = "auto"
 	  docked = false
 	  engaged = false
+	  computeLinks()
 	}
-	if (onHitbox(100, 40, 90, 50)) {
+	if (onHitbox(scoreForm.x+20+100, scoreForm.y+10+40, 90, 50)) {
 	  mode = "tele"
 	  docked = false
 	  engaged = false
+	  computeLinks()
 	}
-	//rect(555, 55, 20, 20)
-	//rect(555, 15, 20, 20)
-	if (onHitbox(555, 15, 20, 20)) {
+
+	if (onHitbox(scoreForm.x+20+555, scoreForm.y+10+15, 20, 20)) {
 	  if (!docked) {
 		docked = true;
 		calculateScore("dock", -1, -1, 1)
@@ -576,7 +587,7 @@ function mouseClicked() {
 		calculateScore("dock", -1, -1, -1)
 	  }
 	}
-	if (onHitbox(555, 55, 20, 20)) {
+	if (onHitbox(scoreForm.x+20+555, scoreForm.y+10+55, 20, 20)) {
 	  if (!engaged) {
 		engaged = true;
 		calculateScore("eng", -1, -1, 1)
@@ -640,10 +651,8 @@ function mouseClicked() {
 	for (i = 0; i < 3; i+=1) {
 	  for (j = 0; j <= 6; j+=1) {
 		if (grid[i][j] && grid[i][j+1] && grid[i][j+2]) {
-		  if (mode != "auto") {
 			temp+=1
 			j+=2
-		  }
 		}
 	  }
 	}
