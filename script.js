@@ -628,19 +628,32 @@ function mouseClicked() {
   
   //dock, eng, piece
   function calculateScore(type, y, x, operation) {
-	if (mode == "auto") {
-	  if (type == "piece") {
-		if (y == 2) {
-		  score += 3*operation
-		}
-		else if (y == 1) {
-		  score += 4*operation
+	if (type == "piece") {
+		if (modeScored[y][x] == "auto") {
+			if (y == 2) {
+				score += 3*operation
+			}
+			else if (y == 1) {
+				score += 4*operation
+			}
+			else {
+				score += 6*operation
+			}
 		}
 		else {
-		  score += 6*operation
+			if (y == 2) {
+				score += 2*operation
+			}
+			else if (y == 1) {
+				score += 3*operation
+			}
+			else {
+				score += 5*operation
+			} 
 		}
-	  }
-	  else if (type == "dock") {
+	}
+	else if (mode == "auto") {
+	  if (type == "dock") {
 		score += 8*operation
 	  }
 	  else {
@@ -648,18 +661,7 @@ function mouseClicked() {
 	  }
 	}
 	else {
-	  if (type == "piece") {
-		if (y == 2) {
-		  score += 2*operation
-		}
-		else if (y == 1) {
-		  score += 3*operation
-		}
-		else {
-		  score += 5*operation
-		} 
-	  }
-	  else if (type == "dock") {
+	  if (type == "dock") {
 		score += 6*operation
 	  }
 	  else {
