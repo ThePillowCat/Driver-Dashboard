@@ -66,6 +66,11 @@ function setup() {
 	grid = [[0,0,0,0,0,0,0,0,0],
            [0,0,0,0,0,0,0,0,0],                 
 		   [0,0,0,0,0,0,0,0,0]]
+
+	modeScored = [[0,0,0,0,0,0,0,0,0],
+	[0,0,0,0,0,0,0,0,0],                 
+	[0,0,0,0,0,0,0,0,0]]
+
 	score = 0;
 	links = 0;
 	mode = "auto"
@@ -550,34 +555,52 @@ function UI(object) {
 function mouseClicked() {
 	for (i = 0; i < 3; i+=1) {
 	  for (j = 0; j < 9; j+=1) {
-		if (onHitbox(scoreForm.x+j*80+50, scoreForm.y+i*100+120, 60, 60)) {
+		if (onHitbox(j*80+50, i*100+120, 60, 60)) {
 		  if (grid[i][j] == 0) {
 			grid[i][j] = 1;
+			//if not scored before
+			if (modeScored[i][j] == 0) {
+				if (mode=="auto") {
+					modeScored[i][j] = "auto"
+				}
+				else {
+					modeScored[i][j] = "tele"
+				}
+			}
 			calculateScore("piece", i, j, 1)
 			computeLinks()
 		  }
 		  else {
 			grid[i][j] = 0;
+			//if not scored before
+			if (modeScored[i][j] == 0) {
+				if (mode=="auto") {
+					modeScored[i][j] = "auto"
+				}
+				else {
+					modeScored[i][j] = "tele"
+				}
+			}
 			calculateScore("piece", i, j, -1)
 			computeLinks()
 		  }
 		}
 	  }
 	}
-	if (onHitbox(scoreForm.x+20+10, scoreForm.y+10+40, 90, 50)) {
+	if (onHitbox(10, 40, 90, 50)) {
 	  mode = "auto"
 	  docked = false
 	  engaged = false
 	  computeLinks()
 	}
-	if (onHitbox(scoreForm.x+20+100, scoreForm.y+10+40, 90, 50)) {
+	if (onHitbox(100, 40, 90, 50)) {
 	  mode = "tele"
 	  docked = false
 	  engaged = false
 	  computeLinks()
 	}
 
-	if (onHitbox(scoreForm.x+20+555, scoreForm.y+10+15, 20, 20)) {
+	if (onHitbox(555, 15, 20, 20)) {
 	  if (!docked) {
 		docked = true;
 		calculateScore("dock", -1, -1, 1)
@@ -587,7 +610,7 @@ function mouseClicked() {
 		calculateScore("dock", -1, -1, -1)
 	  }
 	}
-	if (onHitbox(scoreForm.x+20+555, scoreForm.y+10+55, 20, 20)) {
+	if (onHitbox(555, 55, 20, 20)) {
 	  if (!engaged) {
 		engaged = true;
 		calculateScore("eng", -1, -1, 1)
@@ -600,7 +623,7 @@ function mouseClicked() {
   }
   
   function onHitbox(x, y, w, h) {
-	return (mouseX > x && mouseX < x+w && mouseY > y && mouseY < y+h);
+	return (scoreForm.mouseX-10 > x && scoreForm.mouseX-10 < x+w && scoreForm.mouseY-30 > y && scoreForm.mouseY-30 < y+h);
   }
   
   //dock, eng, piece
