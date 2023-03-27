@@ -339,8 +339,8 @@ function setup() {
 	
 	scoreForm.x = 1350;
 	scoreForm.y = 30;
-	scoreForm.w = 820;
-	scoreForm.h = 440;
+	scoreForm.w = 820*0.8;
+	scoreForm.h = 440*0.8;
 	scoreForm.container.backColor = color(220);
 	scoreForm.title = "Scoring Tracker";
 	
@@ -467,10 +467,10 @@ function draw() {
 			  if (grid[i][j] === 1) {
 				  f.fill("#5b2dc6")
 			  }
-			  f.rect(j*80+50, i*100+120, 60, 60)
+			  f.rect((j*80+50)*0.8, (i*100+120)*0.8, 60*0.8, 60*0.8)
 		  }
 		  else {
-			f.triangle(j*80+80, i*100+120, j*80+50, i*100+180, j*80+110, i*100+180)
+			f.triangle((j*80+80)*0.8, (i*100+120)*0.8, (j*80+50)*0.8, (i*100+180)*0.8, (j*80+110)*0.8, (i*100+180)*0.8)
 		  }
 		  f.fill("white")
 		}
@@ -495,67 +495,67 @@ function windowResized() {
 
 function UI(object) {
 	object.fill("black")
-	for (i = 200; i < 800; i+=200) {
-	  object.line(i, 0, i, 100)
+	for (i = 200*0.8; i < 800*0.8; i+=200*0.8) {
+	  object.line(i, 0, i, 100*0.8)
 	}
-	object.line(0, 100,  800, 100)
-	object.textSize(30);
-	object.text("MODE", 50, 30)
+	object.line(0, 100*0.8,  800*0.8, 100*0.8)
+	object.textSize(30*0.8);
+	object.text("MODE", 50*0.8, 30*0.8)
 	object.noFill()
-	object.rect(10, 40, 180, 50)
-	object.line(100, 40, 100, 90)
+	object.rect(10*0.8, 40*0.8, 180*0.8, 50*0.8)
+	object.line(100*0.8, 40*0.8, 100*0.8, 90*0.8)
 	
 	object.fill(144, 238, 144)
 	if (mode == "auto") {
-		object.rect(10, 40, 90, 50)
+		object.rect(10*0.8, 40*0.8, 90*0.8, 50*0.8)
 	}
 	
 	else {
-		object.rect(100, 40, 90, 50)
+		object.rect(100*0.8, 40*0.8, 90*0.8, 50*0.8)
 	}
 	
 	object.fill("black")
-	object.text("Auto", 25, 75)
-	object.textSize(23)
-	object.text("Tele-OP", 104, 72)
+	object.text("Auto", 25*0.8, 75*0.8)
+	object.textSize(23*0.8)
+	object.text("Tele-OP", 104*0.8, 72*0.8)
 	
-	object.textSize(33)
-	object.text("SCORE", 240, 30)
+	object.textSize(33*0.8)
+	object.text("SCORE", 240*0.8, 30*0.8)
 	
-	object.textSize(35)
+	object.textSize(35*0.8)
 	//change line to this for links to be counted towards score
-	object.text((score+links*5).toString(), 290, 75)
+	object.text((score+links*5).toString(), 290*0.8, 75*0.8)
 	
-	object.textSize(30)
-	object.text("Docked?", 410, 35)
-	object.text("Engaged?", 410, 75)
+	object.textSize(30*0.8)
+	object.text("Docked?", 410*0.8, 35*0.8)
+	object.text("Engaged?", 410*0.8, 75*0.8)
 	
 	object.noFill()
 	if (docked) {
 		object.fill("green")
 	}
-	object.rect(555, 15, 20, 20)
+	object.rect(555*0.8, 15*0.8, 20*0.8, 20*0.8)
 	object.noFill()
 	
 	if (engaged) {
 		object.fill("green")
 	}
-	object.rect(555, 55, 20, 20)
+	object.rect(555*0.8, 55*0.8, 20*0.8, 20*0.8)
 	
 	object.fill("black")
 	
-	object.textSize(30)
-	object.text("LINKS", 650, 30)
+	object.textSize(30*0.8)
+	object.text("LINKS", 650*0.8, 30*0.8)
 	
-	object.textSize(35)
-	object.text(links.toString(), 690,75)
+	object.textSize(35*0.8)
+	object.text(links.toString(), 690*0.8,75*0.8)
 	object.fill("white")
   }
 
 function mouseClicked() {
 	for (i = 0; i < 3; i+=1) {
 	  for (j = 0; j < 9; j+=1) {
-		if (onHitbox(j*80+50, i*100+120, 60, 60)) {
+		if (onHitbox((j*80+50)*0.8, (i*100+120)*0.8, 60*0.8, 60*0.8)) {
 		  if (grid[i][j] == 0) {
 			grid[i][j] = 1;
 			//if not scored before
@@ -587,20 +587,20 @@ function mouseClicked() {
 		}
 	  }
 	}
-	if (onHitbox(10, 40, 90, 50)) {
+	if (onHitbox(10*0.8, 40*0.8, 90*0.8, 50*0.8)) {
 	  mode = "auto"
 	  docked = false
 	  engaged = false
 	  computeLinks()
 	}
-	if (onHitbox(100, 40, 90, 50)) {
+	if (onHitbox(100*0.8, 40*0.8, 90*0.8, 50*0.8)) {
 	  mode = "tele"
 	  docked = false
 	  engaged = false
 	  computeLinks()
 	}
 
-	if (onHitbox(555, 15, 20, 20)) {
+	if (onHitbox(555*0.8, 15*0.8, 20*0.8, 20*0.8)) {
 	  if (!docked) {
 		docked = true;
 		calculateScore("dock", -1, -1, 1)
@@ -610,7 +610,7 @@ function mouseClicked() {
 		calculateScore("dock", -1, -1, -1)
 	  }
 	}
-	if (onHitbox(555, 55, 20, 20)) {
+	if (onHitbox(555*0.8, 55*0.8, 20*0.8, 20*0.8)) {
 	  if (!engaged) {
 		engaged = true;
 		calculateScore("eng", -1, -1, 1)
@@ -623,7 +623,7 @@ function mouseClicked() {
   }
   
   function onHitbox(x, y, w, h) {
-	return (scoreForm.mouseX-10 > x && scoreForm.mouseX-10 < x+w && scoreForm.mouseY-30 > y && scoreForm.mouseY-30 < y+h);
+	return (scoreForm.mouseX-8 > x && scoreForm.mouseX-8 < x+w && scoreForm.mouseY-(30*0.8) > y && scoreForm.mouseY-(30*0.8) < y+h);
   }
   
   //dock, eng, piece
