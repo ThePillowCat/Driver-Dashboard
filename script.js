@@ -26,6 +26,39 @@ var engaged = false;
 var score;
 var docked = false;
 
+var fon
+
+var LEDcanvas;
+var LEDform;
+
+var g;
+var shape = 0
+var lastState = false;
+var lastState = false
+var img
+
+var engegedState
+var chargeState
+
+w = 600;
+h = 600;
+
+
+// swerve
+
+// Wheel angle of rotation and magnitude of each wheel
+wheelA = [10, 20];
+wheelB = [10, 20];
+wheelC = [10, 20];
+wheelD = [10, 20];
+
+// Rotation of whole robot
+totRotation = 0;
+
+//2D list of all wheels
+wheels = [wheelA, wheelB, wheelC, wheelD];
+
+
 function preload() {
 	MUSTANGFormStyle = new P5FormStyle();
 	MUSTANGControlStyle = new P5ControlStyle();
@@ -52,10 +85,12 @@ function preload() {
 
 	MUSTANGControlStyle.buttonTextColor =
 		MUSTANGControlStyle.buttonClickedColor = color(255, 70, 0);
-
 }
 
 function setup() {
+
+	img = loadImage('rainbow.png');
+	fon = loadFont('p5forms_data/ShareTechMono-Regular.ttf')
 
 	arm1Angle = 0;
 	arm2Angle = 0;
@@ -70,6 +105,9 @@ function setup() {
 	modeScored = [[0,0,0,0,0,0,0,0,0],
 	[0,0,0,0,0,0,0,0,0],                 
 	[0,0,0,0,0,0,0,0,0]]
+
+	dockedVals = [[0,0],[0,0]]
+
 
 	score = 0;
 	links = 0;
@@ -349,9 +387,46 @@ function setup() {
 	scoreCanvas.h = 400;
 	scoreCanvas.x = 10;
 	
+
+	LEDform = new P5Form();
+
+	LEDform.x = 1;
+	LEDform.y = 3;
+	LEDform.w = 100;
+	LEDform.h = 100;
+	LEDform.container.backColor = color(220);
+	LEDform.title = "LED";
 	
-	
+	LEDcanvas = new P5Canvas();
+	LEDcanvas.w = 80;
+	LEDcanvas.h = 60;
+
 	scoreForm.container.addControl(scoreCanvas);	
+	LEDform.container.addControl(LEDcanvas)
+	
+	// Show the form
+	formManager.showForm(scoreForm);
+	
+	// Clear the canvas
+	clearCanvas(scoreCanvas);
+
+	swerveForm = new P5Form();
+	
+	swerveForm.x = 1350;
+	swerveForm.y = 30;
+	swerveForm.w = 820;
+	swerveForm.h = 450;
+	swerveForm.container.backColor = color(220);
+	swerveForm.title = "Swerve";
+	
+	swerveCanvas = new P5Canvas();
+	swerveCanvas.w = 800;
+	swerveCanvas.h = 600;
+	swerveCanvas.x = 10;
+	
+	
+	
+	swerveForm.container.addControl(swerveCanvas);	
 
 	// Show the form
 	formManager.showForm(scoreForm);
@@ -364,6 +439,9 @@ function setup() {
 	formManager.showForm(armForm);
 	formManager.showForm(balanceForm);
 	formManager.showForm(scoreForm);
+	formManager.showForm(swerveForm);
+	formManager.showForm(LEDform);
+
 
 	windowResized();
 }
@@ -477,12 +555,67 @@ function draw() {
 	  }
 	  UI(f);
 
+	  g = LEDcanvas.canvas;
+	  g.rectMode(RADIUS)
+  
+	  g.background(220);
+		currentState = mouseIsPressed
+	  if(currentState != lastState && currentState === true && onHitboxV2(10,10,40,40)){
+		  if(shape == 2)shape = 0
+		  else shape += 1
+	  }
+	  lastState = mouseIsPressed
+	  
+	  if (shape == 1){
+		  drawCube(g)
+	  }
+	  if(shape == 2){
+		  drawCone(g)
+	  }
+	  if (shape == 0) {
+		  g.image(img, 0, 0)
+	  }
+
+	var j = swerveCanvas.canvas;
+	j.translate(w / 2, h / 2);
+	j.rotate(totRotation);
+	j.translate(-w / 2, -h / 2);
+	  swerve(j);
+
+
 	formManager.renderForms();
 	formCursor.render();
 }
 
 function keyPressed() {
 	formManager.keyPressed();
+
+	// Testing
+	if (keyCode == LEFT_ARROW) {
+		totRotation += 0.1;
+	} else if (keyCode == RIGHT_ARROW) {
+		totRotation -= 0.1;
+	}
+	if (keyCode == UP_ARROW) {
+		for (let i = 0; i < 4; i += 1) {
+			wheels[i][0] += 1;
+			// wheels[i][1] += 1;
+		}
+	} else if (keyCode == DOWN_ARROW) {
+		for (let i = 0; i < 4; i += 1) {
+			wheels[i][0] -= 1;
+			// wheels[i][1] -= 1;
+		}
+	}
+	if (keyCode == "SPACE") {
+		// Anything else stops rotation
+		// for (let i = 0; i < 4; i += 1) {
+		// 	wheels[i][0] = 0;
+		// 	// wheels[i][1] -= 1;
+		// }
+		// totRotation = 0;
+		return 0;
+	}
 }
 
 function keyReleased() {
@@ -493,6 +626,80 @@ function windowResized() {
 	createCanvas(document.body.clientWidth, 500);
 }
 
+function drawCube(object){
+	object.fill(160,0,255)
+	object.strokeWeight(0)
+	object.rect(25,25,20,20,5)
+}
+
+function drawCone(object){
+	object.fill(255,255,0)
+	object.stroke(255,255,0)
+	object.strokeWeight(8)
+	object.strokeJoin(ROUND);
+	object.triangle(10,40,40,40,25,10)
+}
+
+// swerve
+function swerve(object) {
+
+	// swerve diagram
+	n = 600 / 4;
+	// Arrows
+	let v1 = createVector(n, n);
+	let v2 = createVector(n, 600 - n);
+	let v3 = createVector(600 - n, 600 - n);
+	let v4 = createVector(600 - n, n);
+	arrows = [v1, v2, v3, v4];
+		// Swerve Display Thing
+
+	object.background(255);
+
+	//Box
+	object.strokeWeight(5);
+  
+	object.push();
+	// Drawing frame and wheels, and rotating
+
+	object.quad(n, n, n, h - n, w - n, h - n, w - n, n);
+	a = [n, n];
+	object.circle(n, n, n / 5);
+	object.circle(w - n, n, n / 5);
+	object.circle(n, h - n, n / 5);
+	object.circle(w - n, h - n, n / 5);
+	object.pop();
+  
+	for (let i = 0; i < 4; i++) {
+		object.push();
+		object.stroke(205, 0, 0);
+		object.strokeWeight(w / 80);
+		// Drawing and rotating vectors depending on totrotation
+		object.translate(w / 2, h / 2);
+		object.rotate(totRotation);
+		object.translate(-w / 2, -h / 2);
+	
+		// Drawing and rotating vectors depending on independant wheel rotation
+		object.translate(arrows[i].x, arrows[i].y);
+		object.rotate(wheels[i][0]);
+		object.translate(-arrows[i].x, -arrows[i].y);
+		object.triangle(
+			arrows[i].x + wheels[i][1]+5,
+			arrows[i].y + wheels[i][1]-5,
+			arrows[i].x + wheels[i][1] - 5,
+			arrows[i].y + wheels[i][1] + 5,
+			arrows[i].x + wheels[i][1]+8,
+			arrows[i].y + wheels[i][1]+8,
+		);
+		object.line(
+			arrows[i].x,
+			arrows[i].y,
+			arrows[i].x + wheels[i][1],
+			arrows[i].y + wheels[i][1]
+		);
+		object.pop();
+	}
+}
+
 function UI(object) {
 	object.fill("black")
 	for (i = 200*0.8; i < 800*0.8; i+=200*0.8) {
@@ -500,7 +707,7 @@ function UI(object) {
 	}
 	object.line(0, 100*0.8,  800*0.8, 100*0.8)
 	object.textSize(30*0.8);
-	object.text("MODE", 50*0.8, 30*0.8)
+	object.text("MODE", 65*0.8, 30*0.8)
 	object.noFill()
 	object.rect(10*0.8, 40*0.8, 180*0.8, 50*0.8)
 	object.line(100*0.8, 40*0.8, 100*0.8, 90*0.8)
@@ -515,12 +722,12 @@ function UI(object) {
 	}
 	
 	object.fill("black")
-	object.text("Auto", 25*0.8, 75*0.8)
-	object.textSize(23*0.8)
-	object.text("Tele-OP", 104*0.8, 72*0.8)
+	object.text("Auto", 22*0.8, 75*0.8)
+	object.textSize(21*0.8)
+	object.text("Tele-OP", 105*0.8, 72*0.8)
 	
 	object.textSize(33*0.8)
-	object.text("SCORE", 240*0.8, 30*0.8)
+	object.text("SCORE", 255*0.8, 30*0.8)
 	
 	object.textSize(35*0.8)
 	//change line to this for links to be counted towards score
@@ -545,7 +752,7 @@ function UI(object) {
 	object.fill("black")
 	
 	object.textSize(30*0.8)
-	object.text("LINKS", 650*0.8, 30*0.8)
+	object.text("LINKS", 655*0.8, 30*0.8)
 	
 	object.textSize(35*0.8)
 	object.text(links.toString(), 690*0.8,75*0.8)
@@ -623,7 +830,11 @@ function mouseClicked() {
   }
   
   function onHitbox(x, y, w, h) {
-	return (scoreForm.mouseX-8 > x && scoreForm.mouseX-8 < x+w && scoreForm.mouseY-(30*0.8) > y && scoreForm.mouseY-(30*0.8) < y+h);
+	return (scoreForm.mouseX-12 > x && scoreForm.mouseX-12 < x+w && scoreForm.mouseY-(30*0.8) > y && scoreForm.mouseY-(30*0.8) < y+h);
+  }
+
+  function onHitboxV2(x, y, w, h) {
+	return (LEDform.mouseX-8 > x && LEDform.mouseX-8 < x+w && LEDform.mouseY-(30*0.8) > y && LEDform.mouseY-(30*0.8) < y+h);
   }
   
   //dock, eng, piece
