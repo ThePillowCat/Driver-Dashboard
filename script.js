@@ -22,9 +22,9 @@ var scoreForm;
 var armForm;
 var amountTextBox
 
-var engaged = false;
+var engaged;
 var score;
-var docked = false;
+var docked;
 
 var fon
 
@@ -112,8 +112,8 @@ function setup() {
 	score = 0;
 	links = 0;
 	mode = "auto"
-	docked = false
-	engaged = false
+	docked = [false, false]
+	engaged = [false, false]
 	temp = 0
 
 	resizeCanvas(1920,1080, P2D);
@@ -738,13 +738,19 @@ function UI(object) {
 	object.text("Engaged?", 410*0.8, 75*0.8)
 	
 	object.noFill()
-	if (docked) {
+	if (mode == 'tele' && docked[1]) {
+		object.fill("green")
+	}
+	else if (mode == 'auto' && docked[0]) {
 		object.fill("green")
 	}
 	object.rect(555*0.8, 15*0.8, 20*0.8, 20*0.8)
 	object.noFill()
 	
-	if (engaged) {
+	if (mode == 'tele' && engaged[1]) {
+		object.fill("green")
+	}
+	else if (mode == 'auto' && engaged[0]) {
 		object.fill("green")
 	}
 	object.rect(555*0.8, 55*0.8, 20*0.8, 20*0.8)
@@ -796,36 +802,56 @@ function mouseClicked() {
 	}
 	if (onHitbox(10*0.8, 40*0.8, 90*0.8, 50*0.8)) {
 	  mode = "auto"
-	  docked = false
-	  engaged = false
 	  computeLinks()
 	}
 	if (onHitbox(100*0.8, 40*0.8, 90*0.8, 50*0.8)) {
 	  mode = "tele"
-	  docked = false
-	  engaged = false
 	  computeLinks()
 	}
 
 	if (onHitbox(555*0.8, 15*0.8, 20*0.8, 20*0.8)) {
-	  if (!docked) {
-		docked = true;
-		calculateScore("dock", -1, -1, 1)
-	  }
-	  else {
-		docked = false;
-		calculateScore("dock", -1, -1, -1)
-	  }
+		if (mode == 'auto'){
+			if (!docked[0]) {
+				docked[0] = true;
+				calculateScore("dock", -1, -1, 1)
+			}
+			else {
+				docked[0] = false;
+				calculateScore("dock", -1, -1, -1)
+			}
+		}
+		else if (mode == 'tele'){
+			if (!docked[1]) {
+				docked[1] = true;
+				calculateScore("dock", -1, -1, 1)
+			}
+			else {
+				docked[1] = false;
+				calculateScore("dock", -1, -1, -1)
+			}
+		}
 	}
 	if (onHitbox(555*0.8, 55*0.8, 20*0.8, 20*0.8)) {
-	  if (!engaged) {
-		engaged = true;
-		calculateScore("eng", -1, -1, 1)
-	  }
-	  else {
-		engaged = false;
-		calculateScore("eng", -1, -1, -1)
-	  }
+		if (mode == 'auto'){
+			if (!engaged[0]) {
+				engaged[0] = true;
+				calculateScore("dock", -1, -1, 1)
+			}
+			else {
+				engaged[0] = false;
+				calculateScore("dock", -1, -1, -1)
+			}
+		}
+		else if (mode == 'tele'){
+			if (!engaged[1]) {
+				engaged[1] = true;
+				calculateScore("dock", -1, -1, 1)
+			}
+			else {
+				engaged[1] = false;
+				calculateScore("dock", -1, -1, -1)
+			}
+		}
 	}
   }
   
