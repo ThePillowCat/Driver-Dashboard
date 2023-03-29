@@ -1,3 +1,4 @@
+let url = 'http://localhost:3000/'
 let arm1Length = 100;
 let arm2Length = 75;
 let gripperLength = 25;
@@ -5,8 +6,7 @@ let gripperWidth = 5;
 let armJointSize = 10;
 let arm1Angle, arm2Angle;
 let gripperClosed;
-
-let angle = 0;
+let angle;
 
 var feedbackForm, historyForm, themesForm, threeDForm;
 var threeDCanvas, DRIVERLabel;
@@ -20,9 +20,9 @@ var formCursor;
 
 var scoreForm;
 var armForm;
-var amountTextBox
+var DRIVERnameTextBox
 
-var engaged;
+var engaged = false;
 var score;
 var docked;
 
@@ -40,17 +40,17 @@ var img
 var engegedState
 var chargeState
 
-w = 600;
-h = 600;
+w = 400;
+h = 400;
 
 
 // swerve
 
 // Wheel angle of rotation and magnitude of each wheel
-wheelA = [10, 20];
-wheelB = [10, 20];
-wheelC = [10, 20];
-wheelD = [10, 20];
+wheelA = [0,0];
+wheelB = [0, 0];
+wheelC = [0, 0];
+wheelD = [0, 0];
 
 // Rotation of whole robot
 totRotation = 0;
@@ -89,12 +89,10 @@ function preload() {
 
 function setup() {
 
+	setInterval(getData, 20);
+
 	img = loadImage('rainbow.png');
 	fon = loadFont('p5forms_data/ShareTechMono-Regular.ttf')
-
-	arm1Angle = 0;
-	arm2Angle = 0;
-	gripperClosed = false;
 
 	angleMode(DEGREES)
 
@@ -106,14 +104,12 @@ function setup() {
 	[0,0,0,0,0,0,0,0,0],                 
 	[0,0,0,0,0,0,0,0,0]]
 
-	dockedVals = [[0,0],[0,0]]
-
+	docked = [false, false]
+	engaged = [false, false]
 
 	score = 0;
 	links = 0;
 	mode = "auto"
-	docked = [false, false]
-	engaged = [false, false]
 	temp = 0
 
 	resizeCanvas(1920,1080, P2D);
@@ -123,18 +119,19 @@ function setup() {
 		if (button == "Yes") {
 			msgbox.showMsgBox(feedbackForm, "Feedback info", "Your note has been confirmed!",	MSGBOX_INFO_ICON, ["OK"], null);
 
-			historyListBox.items.push(amountTextBox.text + " cookies | ID: " + (historyListBox.items.length + 1));
-
 			if (attachNotesCheckBox.checked) {
-				historyListBox.items[historyListBox.items.length - 1] = historyListBox.items[historyListBox.length - 1]	+ " | NOTES: " + notesTextBox.text;
+				historyListBox.items.push(DRIVERnameTextBox.text + " | " + notesTextBox.text);
+			}else{
+				historyListBox.items.push("Private" + " | " + notesTextBox.text);
 			}
+
 		} else {
 			msgbox.showMsgBox(feedbackForm, "Feedback info", "Your note has been canceled!", MSGBOX_STOP_ICON, ["OK"], null);
 		}
 	}
 
 	var cookiesButton_onClick = function() {
-		if (amountTextBox.text == "") {
+		if (DRIVERnameTextBox.text == "") {
 			msgbox.showMsgBox(feedbackForm, "Warning", "Please enter your name", MSGBOX_WARN_ICON, ["OK"], null);
 		} else {
 			msgbox.showMsgBox(feedbackForm, "Question",
@@ -211,11 +208,11 @@ function setup() {
 	attachNotesCheckBox.h = 16;
 	attachNotesCheckBox.text = "Notes:";
 
-	amountTextBox = new P5TextBox();
-	amountTextBox.anchorRight;
-	amountTextBox.maxLength = 3;
-	amountTextBox.x = 100;
-	amountTextBox.y = 25;
+	DRIVERnameTextBox = new P5TextBox();
+	DRIVERnameTextBox.anchorRight;
+	DRIVERnameTextBox.maxLength = 16;
+	DRIVERnameTextBox.x = 100;
+	DRIVERnameTextBox.y = 25;
 
 	var notesTextBox = new P5TextBox();
 	notesTextBox.anchorRight = true;
@@ -230,7 +227,7 @@ function setup() {
 	feedbackForm.container.addControl(orderingInfoLabel);
 	feedbackForm.container.addControl(cookiesButton);
 	feedbackForm.container.addControl(prevOrdersButton);
-	feedbackForm.container.addControl(amountTextBox);
+	feedbackForm.container.addControl(DRIVERnameTextBox);
 	feedbackForm.container.addControl(notesTextBox);
 	feedbackForm.container.addControl(themeButton);
 	feedbackForm.container.addControl(attachNotesCheckBox);
@@ -392,14 +389,14 @@ function setup() {
 
 	LEDform.x = 1;
 	LEDform.y = 3;
-	LEDform.w = 100;
-	LEDform.h = 100;
+	LEDform.w = 200;
+	LEDform.h = 200;
 	LEDform.container.backColor = color(220);
 	LEDform.title = "LED";
 	
 	LEDcanvas = new P5Canvas();
-	LEDcanvas.w = 80;
-	LEDcanvas.h = 60;
+	LEDcanvas.w = 180;
+	LEDcanvas.h = 180;
 
 	scoreForm.container.addControl(scoreCanvas);	
 	LEDform.container.addControl(LEDcanvas)
@@ -414,14 +411,14 @@ function setup() {
 	
 	swerveForm.x = 1350;
 	swerveForm.y = 30;
-	swerveForm.w = 820;
-	swerveForm.h = 450;
+	swerveForm.w = 420;
+	swerveForm.h = 420;
 	swerveForm.container.backColor = color(220);
 	swerveForm.title = "Swerve";
 	
 	swerveCanvas = new P5Canvas();
-	swerveCanvas.w = 800;
-	swerveCanvas.h = 600;
+	swerveCanvas.w = 400;
+	swerveCanvas.h = 400;
 	swerveCanvas.x = 10;
 	
 	
@@ -510,8 +507,7 @@ function draw() {
 
 	e.strokeWeight(0)
 	e.textSize(28)
-
-	e.text("Balance", 150, 30)
+	e.textFont(fon)
 	e.text("angle: " + str(angle % 360), 160, 340)
 
 	e.strokeWeight(4)
@@ -560,8 +556,8 @@ function draw() {
   
 	  g.background(220);
 		currentState = mouseIsPressed
-	  if(currentState != lastState && currentState === true && onHitboxV2(10,10,40,40)){
-		  if(shape == 2)shape = 0
+	  if(currentState != lastState && currentState === true && onHitboxV2(10,10,180,180)){
+		  if(shape == 3)shape = 0
 		  else shape += 1
 	  }
 	  lastState = mouseIsPressed
@@ -572,8 +568,8 @@ function draw() {
 	  if(shape == 2){
 		  drawCone(g)
 	  }
-	  if (shape == 0) {
-		  g.image(img, 0, 0)
+	  if (shape == 3) {
+		  g.image(img, 10, 5)
 	  }
 
 	var j = swerveCanvas.canvas;
@@ -587,49 +583,15 @@ function draw() {
 	formCursor.render();
 }
 
-function keyPressed() {
-	formManager.keyPressed();
-
-	// Testing
-	if (keyCode == LEFT_ARROW) {
-		totRotation += 0.1;
-	} else if (keyCode == RIGHT_ARROW) {
-		totRotation -= 0.1;
-	}
-	if (keyCode == UP_ARROW) {
-		for (let i = 0; i < 4; i += 1) {
-			wheels[i][0] += 1;
-			// wheels[i][1] += 1;
-		}
-	} else if (keyCode == DOWN_ARROW) {
-		for (let i = 0; i < 4; i += 1) {
-			wheels[i][0] -= 1;
-			// wheels[i][1] -= 1;
-		}
-	}
-	if (keyCode == "SPACE") {
-		// Anything else stops rotation
-		// for (let i = 0; i < 4; i += 1) {
-		// 	wheels[i][0] = 0;
-		// 	// wheels[i][1] -= 1;
-		// }
-		// totRotation = 0;
-		return 0;
-	}
-}
-
-function keyReleased() {
-	formManager.keyReleased();
-}
 
 function windowResized() {
-	createCanvas(document.body.clientWidth, 500);
+	createCanvas(document.body.clientWidth, 945);
 }
 
 function drawCube(object){
 	object.fill(160,0,255)
 	object.strokeWeight(0)
-	object.rect(25,25,20,20,5)
+	object.rect(90,80,70,70,5)
 }
 
 function drawCone(object){
@@ -637,19 +599,19 @@ function drawCone(object){
 	object.stroke(255,255,0)
 	object.strokeWeight(8)
 	object.strokeJoin(ROUND);
-	object.triangle(10,40,40,40,25,10)
+	object.triangle(20,150,160,150,90,10)
 }
 
 // swerve
 function swerve(object) {
 
 	// swerve diagram
-	n = 600 / 4;
+	n = 400 / 4;
 	// Arrows
 	let v1 = createVector(n, n);
-	let v2 = createVector(n, 600 - n);
-	let v3 = createVector(600 - n, 600 - n);
-	let v4 = createVector(600 - n, n);
+	let v2 = createVector(n, 400 - n);
+	let v3 = createVector(400 - n, 400 - n);
+	let v4 = createVector(400 - n, n);
 	arrows = [v1, v2, v3, v4];
 		// Swerve Display Thing
 
@@ -682,14 +644,16 @@ function swerve(object) {
 		object.translate(arrows[i].x, arrows[i].y);
 		object.rotate(wheels[i][0]);
 		object.translate(-arrows[i].x, -arrows[i].y);
-		object.triangle(
-			arrows[i].x + wheels[i][1]+5,
-			arrows[i].y + wheels[i][1]-5,
-			arrows[i].x + wheels[i][1] - 5,
-			arrows[i].y + wheels[i][1] + 5,
-			arrows[i].x + wheels[i][1]+8,
-			arrows[i].y + wheels[i][1]+8,
-		);
+		if(wheels[i][1] >=5){
+			object.triangle(
+				arrows[i].x + wheels[i][1]+5,
+				arrows[i].y + wheels[i][1]-5,
+				arrows[i].x + wheels[i][1] - 5,
+				arrows[i].y + wheels[i][1] + 5,
+				arrows[i].x + wheels[i][1]+8,
+				arrows[i].y + wheels[i][1]+8,
+			);
+		}
 		object.line(
 			arrows[i].x,
 			arrows[i].y,
@@ -739,20 +703,20 @@ function UI(object) {
 	
 	object.noFill()
 	if (mode == 'tele' && docked[1]) {
-		object.fill("green")
-	}
-	else if (mode == 'auto' && docked[0]) {
-		object.fill("green")
-	}
-	object.rect(555*0.8, 15*0.8, 20*0.8, 20*0.8)
-	object.noFill()
-	
-	if (mode == 'tele' && engaged[1]) {
-		object.fill("green")
-	}
-	else if (mode == 'auto' && engaged[0]) {
-		object.fill("green")
-	}
+        object.fill("green")
+    }
+    else if (mode == 'auto' && docked[0]) {
+        object.fill("green")
+    }
+    object.rect(555*0.8, 15*0.8, 20*0.8, 20*0.8)
+    object.noFill()
+    
+    if (mode == 'tele' && engaged[1]) {
+        object.fill("green")
+    }
+    else if (mode == 'auto' && engaged[0]) {
+        object.fill("green")
+    }
 	object.rect(555*0.8, 55*0.8, 20*0.8, 20*0.8)
 	
 	object.fill("black")
@@ -765,94 +729,94 @@ function UI(object) {
 	object.fill("white")
   }
 
-function mouseClicked() {
-	for (i = 0; i < 3; i+=1) {
-	  for (j = 0; j < 9; j+=1) {
-		if (onHitbox((j*80+50)*0.8, (i*100+120)*0.8, 60*0.8, 60*0.8)) {
-		  if (grid[i][j] == 0) {
-			grid[i][j] = 1;
-			//if not scored before
-			if (modeScored[i][j] == 0) {
-				if (mode=="auto") {
-					modeScored[i][j] = "auto"
-				}
-				else {
-					modeScored[i][j] = "tele"
-				}
-			}
-			calculateScore("piece", i, j, 1)
-			computeLinks()
-		  }
-		  else {
-			grid[i][j] = 0;
-			//if not scored before
-			if (modeScored[i][j] == 0) {
-				if (mode=="auto") {
-					modeScored[i][j] = "auto"
-				}
-				else {
-					modeScored[i][j] = "tele"
-				}
-			}
-			calculateScore("piece", i, j, -1)
-			computeLinks()
-		  }
-		}
-	  }
-	}
-	if (onHitbox(10*0.8, 40*0.8, 90*0.8, 50*0.8)) {
-	  mode = "auto"
-	  computeLinks()
-	}
-	if (onHitbox(100*0.8, 40*0.8, 90*0.8, 50*0.8)) {
-	  mode = "tele"
-	  computeLinks()
-	}
+  function mouseClicked() {
+    for (i = 0; i < 3; i+=1) {
+      for (j = 0; j < 9; j+=1) {
+        if (onHitbox((j*80+50)*0.8, (i*100+120)*0.8, 60*0.8, 60*0.8)) {
+          if (grid[i][j] == 0) {
+            grid[i][j] = 1;
+            //if not scored before
+            if (modeScored[i][j] == 0) {
+                if (mode=="auto") {
+                    modeScored[i][j] = "auto"
+                }
+                else {
+                    modeScored[i][j] = "tele"
+                }
+            }
+            calculateScore("piece", i, j, 1)
+            computeLinks()
+          }
+          else {
+            grid[i][j] = 0;
+            //if not scored before
+            if (modeScored[i][j] == 0) {
+                if (mode=="auto") {
+                    modeScored[i][j] = "auto"
+                }
+                else {
+                    modeScored[i][j] = "tele"
+                }
+            }
+            calculateScore("piece", i, j, -1)
+            computeLinks()
+          }
+        }
+      }
+    }
+    if (onHitbox(10*0.8, 40*0.8, 90*0.8, 50*0.8)) {
+      mode = "auto"
+      computeLinks()
+    }
+    if (onHitbox(100*0.8, 40*0.8, 90*0.8, 50*0.8)) {
+      mode = "tele"
+      computeLinks()
+    }
 
-	if (onHitbox(555*0.8, 15*0.8, 20*0.8, 20*0.8)) {
-		if (mode == 'auto'){
-			if (!docked[0]) {
-				docked[0] = true;
-				calculateScore("dock", -1, -1, 1)
-			}
-			else {
-				docked[0] = false;
-				calculateScore("dock", -1, -1, -1)
-			}
-		}
-		else if (mode == 'tele'){
-			if (!docked[1]) {
-				docked[1] = true;
-				calculateScore("dock", -1, -1, 1)
-			}
-			else {
-				docked[1] = false;
-				calculateScore("dock", -1, -1, -1)
-			}
-		}
-	}
-	if (onHitbox(555*0.8, 55*0.8, 20*0.8, 20*0.8)) {
-		if (mode == 'auto'){
-			if (!engaged[0]) {
-				engaged[0] = true;
-				calculateScore("dock", -1, -1, 1)
-			}
-			else {
-				engaged[0] = false;
-				calculateScore("dock", -1, -1, -1)
-			}
-		}
-		else if (mode == 'tele'){
-			if (!engaged[1]) {
-				engaged[1] = true;
-				calculateScore("dock", -1, -1, 1)
-			}
-			else {
-				engaged[1] = false;
-				calculateScore("dock", -1, -1, -1)
-			}
-		}
-	}
+    if (onHitbox(555*0.8, 15*0.8, 20*0.8, 20*0.8)) {
+        if (mode == 'auto'){
+            if (!docked[0]) {
+                docked[0] = true;
+                calculateScore("dock", -1, -1, 1)
+            }
+            else {
+                docked[0] = false;
+                calculateScore("dock", -1, -1, -1)
+            }
+        }
+        else if (mode == 'tele'){
+            if (!docked[1]) {
+                docked[1] = true;
+                calculateScore("dock", -1, -1, 1)
+            }
+            else {
+                docked[1] = false;
+                calculateScore("dock", -1, -1, -1)
+            }
+        }
+    }
+    if (onHitbox(555*0.8, 55*0.8, 20*0.8, 20*0.8)) {
+        if (mode == 'auto'){
+            if (!engaged[0]) {
+                engaged[0] = true;
+                calculateScore("dock", -1, -1, 1)
+            }
+            else {
+                engaged[0] = false;
+                calculateScore("dock", -1, -1, -1)
+            }
+        }
+        else if (mode == 'tele'){
+            if (!engaged[1]) {
+                engaged[1] = true;
+                calculateScore("dock", -1, -1, 1)
+            }
+            else {
+                engaged[1] = false;
+                calculateScore("dock", -1, -1, -1)
+            }
+        }
+    }
   }
   
   function onHitbox(x, y, w, h) {
@@ -919,6 +883,37 @@ function mouseClicked() {
 	  }
 	}
 	links = temp*1
+  }
+
+  function getData() {
+	fetch(url)
+	  .then(response => response.text()) // get the response as text
+	  .then(data => handleData(JSON.parse(data))) // parse the text as JSON
+	  .catch(error => console.error(error));
+  }
+  
+  function handleData(data) {
+	console.log(data); // log the data to the console for debugging
+	if (data.length > 0) {
+	  // access the first element of the array and the "balanceAngle" property
+	  angle = data[1].balanceAngle;
+	  arm1Angle = data[0].arm1Angle;
+	  arm2Angle = data[0].arm2Angle;
+	  if(data[0].grpperClosed == 0){
+		gripperClosed = false;
+	  }
+	  else{
+		gripperClosed = true;
+	  }
+	  wheelA = [data[3].FLAngle+135, data[3].FLPow/5];
+	  wheelB = [data[3].FRAngle+135, data[3].FRPow/5];
+	  wheelC = [data[3].BLAngle+135, data[3].BLPow/5];
+	  wheelD = [data[3].BRAngle+135, data[3].BRPow/5];
+	  wheels = [wheelA, wheelB, wheelC, wheelD]
+	  //LED = data[2].currentState;
+
+	}
+	// add more logic to handle the rest of the data array as needed
   }
 
 window.onresize = windowResized();

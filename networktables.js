@@ -1,5 +1,7 @@
-NetworkTables.addRobotConnectionListener(function(connected){
-    console.log("Robot connected: " + connected);
-}, true);
-
-//https://robotpy.readthedocs.io/projects/pynetworktables2js/en/stable/api_js.html
+let fetch = import('node-fetch')
+const read = () => {
+    fetch('NetworkTables/arm.json')
+        .then((response) => response.json())
+        .then((json) => console.log(json));
+}
+read()
